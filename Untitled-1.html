@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>极简禅道监控仪表盘</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1890ff",
+                        "background-light": "#f0f2f5",
+                        "card-bg": "#ffffff",
+                        "text-main": "#262626",
+                        "text-secondary": "#595959",
+                        "border-color": "#f0f0f0",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "system-ui", "-apple-system", "BlinkMacSystemFont", "PingFang SC", "Microsoft YaHei", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            .material-symbols-outlined {
+                font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            }
+            ::-webkit-scrollbar {
+                width: 6px;
+            }
+            ::-webkit-scrollbar-track {
+                background: #f1f1f1;
+            }
+            ::-webkit-scrollbar-thumb {
+                background: #d9d9d9;
+                border-radius: 10px;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                background: #bfbfbf;
+            }
+            .drag-region {
+                -webkit-app-region: drag;
+            }
+            .no-drag {
+                -webkit-app-region: no-drag;
+            }
+        }
+    </style>
+</head>
+<body class="bg-background-light font-display text-text-main min-h-screen">
+<div class="flex flex-col h-screen overflow-hidden">
+<header class="h-16 border-b border-border-color bg-white/90 backdrop-blur-md sticky top-0 z-10 px-8 flex items-center justify-between drag-region shrink-0">
+<div class="flex items-center gap-4">
+<div class="bg-primary size-8 rounded-lg flex items-center justify-center text-white shadow-sm">
+<span class="material-symbols-outlined text-xl leading-none">bug_report</span>
+</div>
+<h2 class="text-lg font-bold tracking-tight text-text-main">极简禅道监控仪表盘</h2>
+<div class="flex items-center gap-2 bg-green-50 text-green-600 border border-green-100 px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wider">
+<span class="size-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                实时监控中
+            </div>
+</div>
+<div class="flex items-center gap-6 no-drag">
+<div class="flex items-center gap-3 pr-6 border-r border-border-color">
+<div class="text-right">
+<p class="text-[10px] text-text-secondary uppercase font-bold tracking-tighter leading-none mb-1">上次更新</p>
+<p class="text-xs font-semibold tabular-nums text-text-main">14:24:02</p>
+</div>
+<button class="p-2 rounded-lg hover:bg-slate-100 transition-colors group">
+<span class="material-symbols-outlined text-text-secondary group-hover:rotate-180 transition-transform duration-500">refresh</span>
+</button>
+</div>
+<button class="flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-white text-sm font-bold shadow-sm hover:opacity-90 transition-all active:scale-95">
+<span class="material-symbols-outlined text-sm">sync</span>
+<span>立即同步</span>
+</button>
+</div>
+</header>
+<main class="flex-1 overflow-y-auto">
+<div class="p-8 space-y-8 max-w-[1400px] mx-auto w-full">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+<div class="bg-card-bg p-5 rounded-xl border border-border-color shadow-sm">
+<div class="flex justify-between items-start">
+<p class="text-text-secondary text-xs font-semibold uppercase tracking-wider">总缺陷数</p>
+<span class="material-symbols-outlined text-primary text-xl">bug_report</span>
+</div>
+<p class="text-3xl font-bold mt-2 text-text-main">1,284</p>
+<div class="flex items-center gap-1 mt-3 text-emerald-600 text-[11px] font-bold">
+<span class="material-symbols-outlined text-xs">trending_up</span>
+<span>+12.4%</span>
+</div>
+</div>
+<div class="bg-card-bg p-5 rounded-xl border border-border-color shadow-sm border-t-4 border-t-red-500">
+<div class="flex justify-between items-start">
+<p class="text-text-secondary text-xs font-semibold uppercase tracking-wider">致命</p>
+<span class="material-symbols-outlined text-red-500 text-xl">dangerous</span>
+</div>
+<p class="text-3xl font-bold mt-2 text-red-500">42</p>
+<div class="flex items-center gap-1 mt-3 text-emerald-600 text-[11px] font-bold">
+<span class="material-symbols-outlined text-xs">trending_down</span>
+<span>-2.1%</span>
+</div>
+</div>
+<div class="bg-card-bg p-5 rounded-xl border border-border-color shadow-sm border-t-4 border-t-orange-500">
+<div class="flex justify-between items-start">
+<p class="text-text-secondary text-xs font-semibold uppercase tracking-wider">严重</p>
+<span class="material-symbols-outlined text-orange-500 text-xl">priority_high</span>
+</div>
+<p class="text-3xl font-bold mt-2 text-orange-500">118</p>
+<div class="flex items-center gap-1 mt-3 text-red-500 text-[11px] font-bold">
+<span class="material-symbols-outlined text-xs">trending_up</span>
+<span>+4.2%</span>
+</div>
+</div>
+<div class="bg-card-bg p-5 rounded-xl border border-border-color shadow-sm border-t-4 border-t-amber-500">
+<div class="flex justify-between items-start">
+<p class="text-text-secondary text-xs font-semibold uppercase tracking-wider">主要</p>
+<span class="material-symbols-outlined text-amber-500 text-xl">warning</span>
+</div>
+<p class="text-3xl font-bold mt-2 text-amber-500">315</p>
+<div class="flex items-center gap-1 mt-3 text-red-500 text-[11px] font-bold">
+<span class="material-symbols-outlined text-xs">trending_up</span>
+<span>+5.8%</span>
+</div>
+</div>
+<div class="bg-card-bg p-5 rounded-xl border border-border-color shadow-sm border-t-4 border-t-blue-400">
+<div class="flex justify-between items-start">
+<p class="text-text-secondary text-xs font-semibold uppercase tracking-wider">次要</p>
+<span class="material-symbols-outlined text-blue-400 text-xl">info</span>
+</div>
+<p class="text-3xl font-bold mt-2 text-blue-400">927</p>
+<div class="flex items-center gap-1 mt-3 text-emerald-600 text-[11px] font-bold">
+<span class="material-symbols-outlined text-xs">trending_up</span>
+<span>+18.2%</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<div class="lg:col-span-8 space-y-6">
+<div class="bg-card-bg rounded-xl border border-border-color shadow-sm overflow-hidden">
+<div class="px-6 py-4 border-b border-border-color flex items-center justify-between bg-slate-50/50">
+<h3 class="font-bold flex items-center gap-2 text-text-main">
+<span class="material-symbols-outlined text-primary text-xl">database</span>
+                                数据源配置
+                            </h3>
+<span class="text-[10px] bg-slate-200 px-2 py-0.5 rounded font-bold uppercase tracking-widest text-text-secondary">禅道 API v15.x</span>
+</div>
+<div class="p-6 space-y-5">
+<div class="space-y-2">
+<label class="text-sm font-semibold text-text-secondary">禅道 URL</label>
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-lg">link</span>
+<input class="w-full bg-slate-50 border border-border-color rounded-lg py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" type="text" value="https://zentao.yourcompany.com"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-semibold text-text-secondary">登录 Cookie</label>
+<div class="relative">
+<textarea class="w-full bg-slate-50 border border-border-color rounded-lg py-2.5 px-4 text-sm font-mono focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="请输入 zentaosid=..." rows="3"></textarea>
+<div class="absolute right-2 bottom-2">
+<span class="material-symbols-outlined text-slate-400 cursor-help hover:text-primary transition-colors" title="登录禅道后，在浏览器开发者工具中查找 zentaosid。">help_outline</span>
+</div>
+</div>
+<p class="text-[11px] text-slate-400 italic">凭证信息将仅保存在本地设备中，不会上传至任何云端服务器。</p>
+</div>
+<div class="flex items-center gap-3 pt-2">
+<button class="bg-primary text-white text-sm font-bold px-8 py-2.5 rounded-lg shadow-sm hover:opacity-90 transition-all">保存配置</button>
+<button class="bg-white text-text-secondary border border-border-color text-sm font-bold px-6 py-2.5 rounded-lg hover:bg-slate-50 transition-colors">清除数据</button>
+</div>
+</div>
+</div>
+<div class="bg-card-bg rounded-xl border border-border-color shadow-sm">
+<div class="px-6 py-4 border-b border-border-color bg-slate-50/50">
+<h3 class="font-bold flex items-center gap-2 text-text-main">
+<span class="material-symbols-outlined text-primary text-xl">settings_input_component</span>
+                                高级设置
+                            </h3>
+</div>
+<div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-10">
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<label class="text-sm font-semibold text-text-secondary">监控间隔 (分钟)</label>
+<span class="text-primary font-bold text-sm bg-primary/10 px-2 py-1 rounded">每 15 分钟</span>
+</div>
+<input class="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-primary" max="60" min="1" type="range" value="15"/>
+<div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
+<span>1 分钟</span>
+<span>30 分钟</span>
+<span>60 分钟</span>
+</div>
+</div>
+<div class="space-y-4">
+<label class="text-sm font-semibold text-text-secondary">通知偏好</label>
+<div class="flex flex-col gap-4">
+<label class="relative inline-flex items-center cursor-pointer group">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+<span class="ml-3 text-sm font-medium text-text-secondary group-hover:text-primary transition-colors">启用系统通知</span>
+</label>
+<label class="relative inline-flex items-center cursor-pointer group">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+<span class="ml-3 text-sm font-medium text-text-secondary group-hover:text-primary transition-colors">声音提醒</span>
+</label>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="lg:col-span-4 space-y-6">
+<div class="bg-card-bg h-full rounded-xl border border-border-color shadow-sm flex flex-col">
+<div class="px-6 py-4 border-b border-border-color flex items-center justify-between">
+<h3 class="font-bold flex items-center gap-2 text-text-main">
+<span class="material-symbols-outlined text-primary text-xl">notifications_active</span>
+                                通知记录
+                            </h3>
+<button class="text-slate-400 text-[11px] font-bold hover:text-primary transition-colors">清空记录</button>
+</div>
+<div class="flex-1 overflow-y-auto p-5 space-y-6 max-h-[650px]">
+<div class="flex gap-4 items-start group">
+<div class="mt-1 size-2 rounded-full bg-red-500 shadow-sm flex-shrink-0"></div>
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<span class="text-[10px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded uppercase border border-red-100">Bug 新增通知</span>
+<p class="text-[10px] text-slate-400 font-medium">2 分钟前</p>
+</div>
+<p class="text-sm font-bold text-text-main">发现 3 个新增致命缺陷</p>
+<p class="text-xs text-text-secondary leading-relaxed">项目: "Alpha 核心模块", 版本: 20231012。请尽快处理以防阻塞发布。</p>
+</div>
+</div>
+<div class="flex gap-4 items-start group">
+<div class="mt-1 size-2 rounded-full bg-primary shadow-sm flex-shrink-0"></div>
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<span class="text-[10px] font-bold text-primary bg-blue-50 px-1.5 py-0.5 rounded uppercase border border-blue-100">数据源链接通知</span>
+<p class="text-[10px] text-slate-400 font-medium">14 分钟前</p>
+</div>
+<p class="text-sm font-bold text-text-main">数据源连接恢复成功</p>
+<p class="text-xs text-text-secondary leading-relaxed">心跳检测成功，API 通道已建立。已恢复实时同步功能。</p>
+</div>
+</div>
+<div class="flex gap-4 items-start group">
+<div class="mt-1 size-2 rounded-full bg-orange-500 shadow-sm flex-shrink-0"></div>
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<span class="text-[10px] font-bold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded uppercase border border-orange-100">Bug 新增通知</span>
+<p class="text-[10px] text-slate-400 font-medium">45 分钟前</p>
+</div>
+<p class="text-sm font-bold text-text-main">新增 1 个主要缺陷</p>
+<p class="text-xs text-text-secondary leading-relaxed">模块: "结算系统", 状态: 已指派给 @测试组。</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-white p-8 rounded-xl border border-primary/20 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+<div class="flex items-center gap-6">
+<div class="w-32 h-20 bg-center bg-no-repeat bg-cover rounded-lg shadow-sm border border-slate-100" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDU09AQGZ4DE2vmFV-D38-45Zgfty2Gu6HCco7_P4izx8IeobSTQoYVbETrmozcyfd-owcwtAQYU7H45JuOuVvoYoGAJMnsoh24ECAavWi_2hfUSOz5hemk3Uk2gIfyOLokAHNPEOajtLh1Wt_UK3vCCaIfUpniSg6KHnp94-AZIjrRobaxKa6Z4EARQdxENaWbHXs-4eMj3YCIpEmqNhV_7OZYgA5KkOorq0bfDtEAVM1-zlu8YRu52xdgWGL4cHgBRsuQJ1Z_jf9c");'></div>
+<div class="space-y-1">
+<h4 class="text-lg font-bold text-text-main">极简禅道深度分析 专业版</h4>
+<p class="text-text-secondary text-sm max-w-md">解锁基于机器学习的 Bug 修复周期预测、全量历史数据报表及团队协作功能。</p>
+</div>
+</div>
+<button class="bg-primary text-white font-bold py-3 px-10 rounded-lg text-sm hover:shadow-md transition-all hover:-translate-y-0.5 active:translate-y-0">立即升级</button>
+</div>
+</div>
+</main>
+<footer class="mt-auto px-8 py-3 bg-white border-t border-border-color flex justify-between items-center shrink-0">
+<div class="flex items-center gap-6 text-[10px] font-bold text-slate-400 tracking-widest uppercase">
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px]">bolt</span> 引擎: 已开启</span>
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px]">lan</span> API: 已连接</span>
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px]">terminal</span> V1.2.0 STABLE</span>
+</div>
+<div class="text-[10px] font-bold text-slate-400 tracking-tighter">
+            INST-ID: ZEN-APP-88A-921-X1
+        </div>
+</footer>
+</div>
+
+</body></html>
