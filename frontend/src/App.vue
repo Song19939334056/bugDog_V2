@@ -10,6 +10,7 @@ import {
   GetLogs,
   GetMonitoringStatus,
   GetStats,
+  OpenURLInChrome,
   SaveConfig,
   StartMonitoring,
   StopMonitoring,
@@ -36,6 +37,14 @@ type Config = {
   intervalMinutes: number;
   enableNotifications: boolean;
   enableSound: boolean;
+  notifyLevels: {
+    level1: boolean;
+    level2: boolean;
+    level3: boolean;
+    level4: boolean;
+  };
+  notifyOnIncrease: boolean;
+  notifyOnDecrease: boolean;
 };
 
 type ChangeLogEntry = {
@@ -58,6 +67,14 @@ const config = reactive<Config>({
   intervalMinutes: 15,
   enableNotifications: true,
   enableSound: true,
+  notifyLevels: {
+    level1: true,
+    level2: true,
+    level3: true,
+    level4: true,
+  },
+  notifyOnIncrease: true,
+  notifyOnDecrease: true,
 });
 
 const stats = reactive<Stats>({
@@ -221,6 +238,17 @@ async function testNotification(): Promise<void> {
   await TestNotification();
 }
 
+async function openURLInChrome(url: string): Promise<void> {
+  if (!url) return;
+  try {
+    await OpenURLInChrome(url);
+  } catch (error) {
+    console.error('无法在 Chrome 中打开链接:', error);
+    // 如果 Chrome 打开失败，回退到默认浏览器
+    window.open(url, '_blank');
+  }
+}
+
 onMounted(async () => {
   Object.assign(config, await GetConfig());
   Object.assign(stats, await GetStats());
@@ -285,7 +313,7 @@ watch(
         <div class="bg-primary size-8 rounded-lg flex items-center justify-center text-white shadow-sm">
           <span class="material-symbols-outlined text-xl leading-none">bug_report</span>
         </div>
-        <h2 class="text-lg font-bold tracking-tight text-text-main">极简禅道监控仪表盘</h2>
+        <h2 class="text-lg font-bold tracking-tight text-text-main">监控面板</h2>
         <div
           class="flex items-center gap-2 px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wider border"
           :class="monitoringBadgeClass"
@@ -533,6 +561,66 @@ watch(
                     </label>
                   </div>
                 </div>
+                <div class="space-y-4">
+                  <label class="text-sm font-semibold text-text-secondary">Bug 等级过滤</label>
+                  <div class="grid grid-cols-2 gap-3">
+                    <label class="flex items-center gap-2 text-sm text-text-secondary">
+                      <input
+                        v-model="config.notifyLevels.level1"
+                        class="rounded border-border-color text-primary focus:ring-primary/30"
+                        type="checkbox"
+                      />
+                      一级
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-text-secondary">
+                      <input
+                        v-model="config.notifyLevels.level2"
+                        class="rounded border-border-color text-primary focus:ring-primary/30"
+                        type="checkbox"
+                      />
+                      二级
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-text-secondary">
+                      <input
+                        v-model="config.notifyLevels.level3"
+                        class="rounded border-border-color text-primary focus:ring-primary/30"
+                        type="checkbox"
+                      />
+                      三级
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-text-secondary">
+                      <input
+                        v-model="config.notifyLevels.level4"
+                        class="rounded border-border-color text-primary focus:ring-primary/30"
+                        type="checkbox"
+                      />
+                      四级
+                    </label>
+                  </div>
+                  <p class="text-[11px] text-slate-400 italic">仅在勾选等级数量变化时发送通知。</p>
+                </div>
+                <div class="space-y-4">
+                  <label class="text-sm font-semibold text-text-secondary">通知触发</label>
+                  <div class="grid grid-cols-2 gap-3">
+                    <label class="flex items-center gap-2 text-sm text-text-secondary">
+                      <input
+                        v-model="config.notifyOnIncrease"
+                        class="rounded border-border-color text-primary focus:ring-primary/30"
+                        type="checkbox"
+                      />
+                      数量增加时通知
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-text-secondary">
+                      <input
+                        v-model="config.notifyOnDecrease"
+                        class="rounded border-border-color text-primary focus:ring-primary/30"
+                        type="checkbox"
+                      />
+                      数量减少时通知
+                    </label>
+                  </div>
+                  <p class="text-[11px] text-slate-400 italic">通过“应用设置”按钮生效。</p>
+                </div>
               </div>
             </div>
           </div>
@@ -579,47 +667,16 @@ watch(
           </div>
         </div>
 
-        <div
-          class="bg-white p-8 rounded-xl border border-primary/20 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm"
-        >
-          <div class="flex items-center gap-6">
-            <div
-              class="w-32 h-20 bg-center bg-no-repeat bg-cover rounded-lg shadow-sm border border-slate-100"
-              style="
-                background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDU09AQGZ4DE2vmFV-D38-45Zgfty2Gu6HCco7_P4izx8IeobSTQoYVbETrmozcyfd-owcwtAQYU7H45JuOuVvoYoGAJMnsoh24ECAavWi_2hfUSOz5hemk3Uk2gIfyOLokAHNPEOajtLh1Wt_UK3vCCaIfUpniSg6KHnp94-AZIjrRobaxKa6Z4EARQdxENaWbHXs-4eMj3YCIpEmqNhV_7OZYgA5KkOorq0bfDtEAVM1-zlu8YRu52xdgWGL4cHgBRsuQJ1Z_jf9c');
-              "
-            ></div>
-            <div class="space-y-1">
-              <h4 class="text-lg font-bold text-text-main">极简禅道深度分析 专业版</h4>
-              <p class="text-text-secondary text-sm max-w-md">
-                解锁基于机器学习的 Bug 修复周期预测、全量历史数据报表及团队协作功能。
-              </p>
-            </div>
-          </div>
-          <button
-            class="bg-primary text-white font-bold py-3 px-10 rounded-lg text-sm hover:shadow-md transition-all hover:-translate-y-0.5 active:translate-y-0"
-          >
-            立即升级
-          </button>
-        </div>
       </div>
     </main>
     <footer class="mt-auto px-8 py-3 bg-white border-t border-border-color flex justify-between items-center shrink-0">
       <div class="flex items-center gap-6 text-[10px] font-bold text-slate-400 tracking-widest uppercase">
         <span class="flex items-center gap-1.5">
           <span class="material-symbols-outlined text-[14px]">bolt</span>
-          引擎: 已开启
+          我的禅道: <a :href="config.url" @click.prevent="openURLInChrome(config.url)" class="hover:text-primary transition-colors cursor-pointer">{{ config.url }}</a>
         </span>
-        <span class="flex items-center gap-1.5">
-          <span class="material-symbols-outlined text-[14px]">lan</span>
-          API: 已连接
-        </span>
-        <span class="flex items-center gap-1.5">
-          <span class="material-symbols-outlined text-[14px]">terminal</span>
-          V1.2.0 STABLE
-        </span>
+
       </div>
-      <div class="text-[10px] font-bold text-slate-400 tracking-tighter">INST-ID: ZEN-APP-88A-921-X1</div>
     </footer>
   </div>
 

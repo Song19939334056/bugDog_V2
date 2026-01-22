@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
+	goRuntime "runtime"
+	"strings"
 	"sync"
 	"time"
 
@@ -17,20 +20,20 @@ const maxLogEntries = 200
 
 // App struct
 type App struct {
-	ctx         context.Context
-	mu          sync.Mutex
-	config      Config
-	stats       Stats
-	changeLog   []ChangeLogEntry
-	logEntries  []LogEntry
-	dataDir     string
-	pollerStop  chan struct{}
-	scrapeGate  chan struct{}
-	quitting    bool
-	windowHidden bool
+	ctx               context.Context
+	mu                sync.Mutex
+	config            Config
+	stats             Stats
+	changeLog         []ChangeLogEntry
+	logEntries        []LogEntry
+	dataDir           string
+	pollerStop        chan struct{}
+	scrapeGate        chan struct{}
+	quitting          bool
+	windowHidden      bool
 	monitoringEnabled bool
-	httpClient  *http.Client
-	trayStarted bool
+	httpClient        *http.Client
+	trayStarted       bool
 }
 
 // NewApp creates a new App application struct
@@ -162,20 +165,26 @@ func (a *App) FetchNow() error {
 
 	var previous Stats
 	var notify bool
+	var totalChanged bool
 	var delta int
 	a.mu.Lock()
 	previous = a.stats
 	a.stats = stats
-	notify = previous.Total != 0 && previous.Total != stats.Total
-	if notify {
+	hasPrev := !previous.LastUpdated.IsZero()
+	totalChanged = hasPrev && previous.Total != stats.Total
+	if totalChanged {
 		delta = stats.Total - previous.Total
 	}
+	notify = hasPrev &&
+		totalChanged &&
+		shouldNotifyOnDelta(delta, cfg.NotifyOnIncrease, cfg.NotifyOnDecrease) &&
+		selectedLevelsChanged(previous.Severity, stats.Severity, cfg.NotifyLevels)
 	a.mu.Unlock()
 
 	_ = a.saveState(stats)
 	a.emitStats()
 
-	if notify {
+	if totalChanged {
 		entry := ChangeLogEntry{
 			Timestamp: stats.LastUpdated,
 			Total:     stats.Total,
@@ -184,14 +193,17 @@ func (a *App) FetchNow() error {
 		}
 		a.addChangeLog(entry)
 		a.emitChangeLog()
-		a.maybeNotifyChange(entry)
+	}
+	if notify {
+		message := buildNotifyMessage(previous.Severity, stats.Severity, cfg.NotifyLevels, stats.Total)
+		a.maybeNotifyChange(message)
 	}
 
 	return nil
 }
 
 func (a *App) TestNotification() error {
-	a.sendNotification("ZenTao Bug Monitor", "测试通知：系统通知与声音已触发。")
+	a.sendNotification("禅道监控", "测试通知：系统通知与声音已触发。")
 	a.playSound(true)
 	a.addLog("info", "Test notification triggered", 0)
 	a.emitLogs()
@@ -342,11 +354,10 @@ func (a *App) emitMonitoring() {
 	runtime.EventsEmit(a.ctx, "monitoring", a.isMonitoringEnabled())
 }
 
-func (a *App) maybeNotifyChange(entry ChangeLogEntry) {
+func (a *App) maybeNotifyChange(message string) {
 	cfg := a.GetConfig()
 	if cfg.EnableNotifications {
-		title := "ZenTao Bug Monitor"
-		message := fmt.Sprintf("缺陷数量变化：%+d，当前总数 %d", entry.Delta, entry.Total)
+		title := "禅道监控"
 		a.sendNotification(title, message)
 	}
 	if cfg.EnableSound {
@@ -359,6 +370,58 @@ func (a *App) playSound(force bool) {
 		return
 	}
 	runtime.EventsEmit(a.ctx, "play-sound", force)
+}
+
+func shouldNotifyOnDelta(delta int, onIncrease, onDecrease bool) bool {
+	if delta > 0 {
+		return onIncrease
+	}
+	if delta < 0 {
+		return onDecrease
+	}
+	return false
+}
+
+func selectedLevelsChanged(prev SeverityCounts, curr SeverityCounts, levels map[string]bool) bool {
+	if levels == nil || len(levels) == 0 {
+		levels = defaultNotifyLevels()
+	}
+	if levels["level1"] && prev.Critical != curr.Critical {
+		return true
+	}
+	if levels["level2"] && prev.Severe != curr.Severe {
+		return true
+	}
+	if levels["level3"] && prev.Major != curr.Major {
+		return true
+	}
+	if levels["level4"] && prev.Minor != curr.Minor {
+		return true
+	}
+	return false
+}
+
+func buildNotifyMessage(prev SeverityCounts, curr SeverityCounts, levels map[string]bool, total int) string {
+	if levels == nil || len(levels) == 0 {
+		levels = defaultNotifyLevels()
+	}
+	parts := make([]string, 0, 4)
+	if levels["level1"] && prev.Critical != curr.Critical {
+		parts = append(parts, fmt.Sprintf("一级 %d→%d", prev.Critical, curr.Critical))
+	}
+	if levels["level2"] && prev.Severe != curr.Severe {
+		parts = append(parts, fmt.Sprintf("二级 %d→%d", prev.Severe, curr.Severe))
+	}
+	if levels["level3"] && prev.Major != curr.Major {
+		parts = append(parts, fmt.Sprintf("三级 %d→%d", prev.Major, curr.Major))
+	}
+	if levels["level4"] && prev.Minor != curr.Minor {
+		parts = append(parts, fmt.Sprintf("四级 %d→%d", prev.Minor, curr.Minor))
+	}
+	if len(parts) == 0 {
+		return fmt.Sprintf("选中等级数量变化，当前总数 %d", total)
+	}
+	return fmt.Sprintf("等级变化：%s，当前总数 %d", strings.Join(parts, "，"), total)
 }
 
 func (a *App) setMonitoringEnabled(enabled bool) {
@@ -384,4 +447,48 @@ func (a *App) isMonitoringEnabled() bool {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	return a.monitoringEnabled
+}
+
+// OpenURLInChrome 使用 Chrome 浏览器打开指定的 URL
+func (a *App) OpenURLInChrome(url string) error {
+	if url == "" {
+		return errors.New("URL 不能为空")
+	}
+
+	var cmd *exec.Cmd
+	if goRuntime.GOOS == "windows" {
+		// Windows 系统：尝试多个可能的 Chrome 路径
+		chromePaths := []string{
+			`C:\Program Files\Google\Chrome\Application\chrome.exe`,
+			`C:\Program Files (x86)\Google\Chrome\Application\chrome.exe`,
+			os.Getenv("LOCALAPPDATA") + `\Google\Chrome\Application\chrome.exe`,
+		}
+
+		var chromePath string
+		for _, path := range chromePaths {
+			if _, err := os.Stat(path); err == nil {
+				chromePath = path
+				break
+			}
+		}
+
+		if chromePath == "" {
+			// 如果找不到 Chrome，尝试使用 start 命令（会使用默认浏览器）
+			cmd = exec.Command("cmd", "/c", "start", "chrome", url)
+		} else {
+			cmd = exec.Command(chromePath, url)
+		}
+	} else if goRuntime.GOOS == "darwin" {
+		// macOS 系统
+		cmd = exec.Command("open", "-a", "Google Chrome", url)
+	} else {
+		// Linux 系统
+		cmd = exec.Command("google-chrome", url)
+	}
+
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("无法启动 Chrome: %v", err)
+	}
+
+	return nil
 }

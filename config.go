@@ -7,12 +7,24 @@ import (
 
 const defaultURL = "https://zentao.sskuaixiu.com/my-work-bug.html?tid=r6xl1evk"
 
+func defaultNotifyLevels() map[string]bool {
+	return map[string]bool{
+		"level1": true,
+		"level2": true,
+		"level3": true,
+		"level4": true,
+	}
+}
+
 func defaultConfig() Config {
 	return Config{
 		URL:                 defaultURL,
 		IntervalMinutes:     15,
 		EnableNotifications: true,
 		EnableSound:         true,
+		NotifyLevels:        defaultNotifyLevels(),
+		NotifyOnIncrease:    true,
+		NotifyOnDecrease:    true,
 	}
 }
 
@@ -28,7 +40,25 @@ func sanitizeConfig(cfg Config) Config {
 	if cfg.IntervalMinutes > 60 {
 		cfg.IntervalMinutes = 60
 	}
+	cfg.NotifyLevels = sanitizeNotifyLevels(cfg.NotifyLevels)
+	if !cfg.NotifyOnIncrease && !cfg.NotifyOnDecrease {
+		cfg.NotifyOnIncrease = true
+		cfg.NotifyOnDecrease = true
+	}
 	return cfg
+}
+
+func sanitizeNotifyLevels(levels map[string]bool) map[string]bool {
+	if levels == nil || len(levels) == 0 {
+		return defaultNotifyLevels()
+	}
+	defaults := defaultNotifyLevels()
+	for key, value := range defaults {
+		if _, ok := levels[key]; !ok {
+			levels[key] = value
+		}
+	}
+	return levels
 }
 
 func (a *App) loadConfig() error {

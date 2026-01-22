@@ -1,8 +1,11 @@
 package main
 
 import (
+	"runtime"
+	"time"
+
 	"github.com/getlantern/systray"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
+	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 func (a *App) startTray() {
@@ -13,7 +16,7 @@ func (a *App) startTray() {
 	}
 	a.trayStarted = true
 	a.mu.Unlock()
-	go systray.Run(a.onTrayReady, a.onTrayExit)
+	go a.trayLoop()
 }
 
 func (a *App) stopTray() {
@@ -26,10 +29,22 @@ func (a *App) stopTray() {
 	}
 }
 
+func (a *App) trayLoop() {
+	for {
+		runtime.LockOSThread()
+		systray.Run(a.onTrayReady, a.onTrayExit)
+		runtime.UnlockOSThread()
+		if a.shouldStopTray() {
+			return
+		}
+		time.Sleep(2 * time.Second)
+	}
+}
+
 func (a *App) onTrayReady() {
-	systray.SetIcon(trayIcon)
-	systray.SetTitle("ZenTao Bug Monitor")
-	systray.SetTooltip("ZenTao Bug Monitor")
+	systray.SetIcon(trayIconICO)
+	systray.SetTitle("禅道监控")
+	systray.SetTooltip("禅道监控")
 
 	toggleItem := systray.AddMenuItem("显示/隐藏", "切换主窗口")
 	syncItem := systray.AddMenuItem("立即同步", "抓取最新缺陷")
@@ -61,12 +76,12 @@ func (a *App) toggleWindow() {
 	hidden := a.windowHidden
 	a.mu.Unlock()
 	if hidden {
-		runtime.WindowShow(a.ctx)
-		runtime.WindowCenter(a.ctx)
+		wailsRuntime.WindowShow(a.ctx)
+		wailsRuntime.WindowCenter(a.ctx)
 		a.setWindowHidden(false)
 		return
 	}
-	runtime.WindowHide(a.ctx)
+	wailsRuntime.WindowHide(a.ctx)
 	a.setWindowHidden(true)
 }
 
@@ -75,7 +90,7 @@ func (a *App) quitFromTray() {
 	a.quitting = true
 	a.mu.Unlock()
 	if a.ctx != nil {
-		runtime.Quit(a.ctx)
+		wailsRuntime.Quit(a.ctx)
 	}
 }
 
@@ -83,4 +98,10 @@ func (a *App) setWindowHidden(hidden bool) {
 	a.mu.Lock()
 	a.windowHidden = hidden
 	a.mu.Unlock()
+}
+
+func (a *App) shouldStopTray() bool {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	return a.quitting || !a.trayStarted
 }

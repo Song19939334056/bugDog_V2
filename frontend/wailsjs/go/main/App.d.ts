@@ -18,6 +18,8 @@ export function GetMonitoringStatus():Promise<boolean>;
 
 export function GetStats():Promise<main.Stats>;
 
+export function OpenURLInChrome(arg1:string):Promise<void>;
+
 export function SaveConfig(arg1:main.Config):Promise<void>;
 
 export function StartMonitoring():Promise<void>;

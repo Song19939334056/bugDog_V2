@@ -2,5 +2,5 @@ package main
 
 import _ "embed"
 
-//go:embed build/appicon.png
-var trayIcon []byte
+//go:embed build/windows/icon.ico
+var trayIconICO []byte

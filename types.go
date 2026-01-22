@@ -3,11 +3,14 @@ package main
 import "time"
 
 type Config struct {
-	URL                 string `json:"url"`
-	Cookie              string `json:"cookie"`
-	IntervalMinutes     int    `json:"intervalMinutes"`
-	EnableNotifications bool   `json:"enableNotifications"`
-	EnableSound         bool   `json:"enableSound"`
+	URL                 string          `json:"url"`
+	Cookie              string          `json:"cookie"`
+	IntervalMinutes     int             `json:"intervalMinutes"`
+	EnableNotifications bool            `json:"enableNotifications"`
+	EnableSound         bool            `json:"enableSound"`
+	NotifyLevels        map[string]bool `json:"notifyLevels"`
+	NotifyOnIncrease    bool            `json:"notifyOnIncrease"`
+	NotifyOnDecrease    bool            `json:"notifyOnDecrease"`
 }
 
 type SeverityCounts struct {

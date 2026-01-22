@@ -34,6 +34,10 @@ export function GetStats() {
   return window['go']['main']['App']['GetStats']();
 }
 
+export function OpenURLInChrome(arg1) {
+  return window['go']['main']['App']['OpenURLInChrome'](arg1);
+}
+
 export function SaveConfig(arg1) {
   return window['go']['main']['App']['SaveConfig'](arg1);
 }

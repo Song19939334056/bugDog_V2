@@ -61,6 +61,9 @@ export namespace main {
 	    intervalMinutes: number;
 	    enableNotifications: boolean;
 	    enableSound: boolean;
+	    notifyLevels: Record<string, boolean>;
+	    notifyOnIncrease: boolean;
+	    notifyOnDecrease: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new Config(source);
@@ -73,6 +76,9 @@ export namespace main {
 	        this.intervalMinutes = source["intervalMinutes"];
 	        this.enableNotifications = source["enableNotifications"];
 	        this.enableSound = source["enableSound"];
+	        this.notifyLevels = source["notifyLevels"];
+	        this.notifyOnIncrease = source["notifyOnIncrease"];
+	        this.notifyOnDecrease = source["notifyOnDecrease"];
 	    }
 	}
 	export class LogEntry {
